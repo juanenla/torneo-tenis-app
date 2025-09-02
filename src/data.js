@@ -57,5 +57,9 @@ export const initialMatches = [
   { matchId: 35, player1Id: 17, player2Id: 14, result: "6-4, 6-7, 7-6" },
   { matchId: 36, player1Id: 10, player2Id: 18, result: "6-2, 6-4" },
   { matchId: 37, player1Id: 18, player2Id: 16, result: "6-3, 6-2" },
+  { matchId: 38, player1Id: 18, player2Id: 5, result: "6-3, 7-5" },
+  { matchId: 39, player1Id: 18, player2Id: 17, result: "6-4, 6-2" },
+  { matchId: 40, player1Id: 14, player2Id: 12, result: "2-6, 3-6" },
+  { matchId: 41, player1Id: 10, player2Id: 1, result: "7-5, 6-4" },
 ];
 
