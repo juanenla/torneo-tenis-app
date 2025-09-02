@@ -98,7 +98,7 @@ export default function App() {
             <div className="max-w-7xl mx-auto">
                 <header className="mb-8 text-center">
                 <h1 className="text-4xl font-bold tracking-tight text-cyan-400">Torneo LIGA CUBANITOS</h1>
-                    <p className="text-gray-400 text-lg mt-2">Categoría B</p>
+                <p className="text-gray-400 text-2xl mt-2">Categoría B</p>
                 </header>
                 <p className="text-center text-gray-400 mb-8 -mt-2">Haz clic en un jugador para ver detalles y cargar partidos pendientes.</p>
                 <div className="relative mb-6">
