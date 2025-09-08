@@ -133,11 +133,19 @@ export default function App() {
                             <tr><th className="py-3 px-4 text-center">#</th><th className="py-3 px-4">Jugador</th><th className="py-3 px-4 text-center">Pts</th><th className="py-3 px-4 text-center">PJ</th><th className="py-3 px-4 text-center">PG</th><th className="py-3 px-4 text-center">PP</th><th className="py-3 px-4 text-center">SG</th><th className="py-3 px-4 text-center">SP</th><th className="py-3 px-4 text-center">% Set</th><th className="py-3 px-4 text-center">JG</th><th className="py-3 px-4 text-center">JP</th><th className="py-3 px-4 text-center">% Game</th></tr>
                         </thead>
                         <tbody className="divide-y divide-gray-700">
-                            {filteredPlayers.map((player) => {
-                                // El 'rank' ya viene listo desde 'logic.js' (ej: 1, 2, o 'INAC')
-                                // Simplemente lo pasamos al componente PlayerRow.
-                                return (<PlayerRow key={player.id} player={player} rank={player.rank} onSelectPlayer={setSelectedPlayer} />);
-                            })}
+                            {filteredPlayers.map((player) => (
+                                // --- ESTA ES LA LÍNEA CRÍTICA Y LA SOLUCIÓN FINAL ---
+                                // Usamos 'player.rank' que ya viene PRE-CALCULADO desde 'logic.js'.
+                                // Esto asegura que el número de ranking sea el de la tabla general,
+                                // sin importar si la lista de jugadores está filtrada por la búsqueda.
+                                // El error anterior ocurría al calcular el ranking aquí usando el 'index'.
+                                <PlayerRow 
+                                    key={player.id} 
+                                    player={player} 
+                                    rank={player.rank} 
+                                    onSelectPlayer={setSelectedPlayer} 
+                                />
+                            ))}
                         </tbody>
                     </table>
                 </div>
