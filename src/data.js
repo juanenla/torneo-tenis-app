@@ -61,6 +61,6 @@ export const initialMatches = [
   { matchId: 39, player1Id: 18, player2Id: 17, result: "6-4, 6-2" },
   { matchId: 40, player1Id: 14, player2Id: 12, result: "2-6, 3-6" },
   { matchId: 41, player1Id: 10, player2Id: 1, result: "7-5, 6-4" },
-  { matchId: 42, player1Id: 13, player2Id: 12, result: "7-5, 6-4" }
+  { matchId: 42, player1Id: 13, player2Id: 12, result: "6-3, 6-3" }
   ,];
 
