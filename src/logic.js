@@ -37,23 +37,27 @@ export function calculateLeaderboard(players, matches) {
   
     const allPlayersWithStats = Array.from(playerStats.values());
   
-    // <-- CAMBIO CLAVE 1: SEPARAR JUGADORES ACTIVOS E INACTIVOS -->
     const activePlayers = allPlayersWithStats.filter(p => p.isActive);
     const inactivePlayers = allPlayersWithStats.filter(p => !p.isActive);
   
-    // <-- CAMBIO CLAVE 2: ORDENAR SOLO A LOS JUGADORES ACTIVOS -->
+    // ORDENAMIENTO CORREGIDO
     activePlayers.sort((a, b) => {
+      // 1. Criterio principal: Partidos ganados
       if (a.pg !== b.pg) return b.pg - a.pg;
-      const diffSetsA = a.sg - a.sp;
-      const diffSetsB = b.sg - b.sp;
-      if (diffSetsA !== diffSetsB) return diffSetsB - diffSetsA;
-      const diffGamesA = a.jg - a.jp;
-      const diffGamesB = b.jg - a.jp;
-      if (diffGamesA !== diffGamesB) return diffGamesB - diffGamesA;
+
+      // 2. Nuevo criterio: Porcentaje de sets ganados
+      const setRatioA = (a.sg + a.sp > 0) ? a.sg / (a.sg + a.sp) : 0;
+      const setRatioB = (b.sg + b.sp > 0) ? b.sg / (b.sg + b.sp) : 0;
+      if (setRatioA !== setRatioB) return setRatioB - setRatioA;
+
+      // 3. Nuevo criterio: Porcentaje de games ganados
+      const gameRatioA = (a.jg + a.jp > 0) ? a.jg / (a.jg + a.jp) : 0;
+      const gameRatioB = (b.jg + b.jp > 0) ? b.jg / (b.jg + b.jp) : 0;
+      if (gameRatioA !== gameRatioB) return gameRatioB - gameRatioA;
+
       return 0;
     });
   
-    // <-- CAMBIO CLAVE 3: ASIGNAR RANKING NUMÉRICO A ACTIVOS Y 'INAC' A INACTIVOS -->
     const rankedActivePlayers = activePlayers.map((player, index) => ({
       ...player,
       rank: index + 1
@@ -63,48 +67,5 @@ export function calculateLeaderboard(players, matches) {
         rank: 'INAC'
     }));
   
-    // Devolvemos la lista final, con activos rankeados primero, seguidos por los inactivos.
     return [...rankedActivePlayers, ...rankedInactivePlayers];
-  }
-  
-  // --- OTRAS FUNCIONES SIN CAMBIOS ---
-  
-  export function parseAndValidateResult(resultString) {
-    let sets;
-    if (resultString.includes(',')) {
-        sets = resultString.split(',').map(s => s.trim());
-    } else {
-        sets = resultString.split(' ').map(s => s.trim()).filter(Boolean);
-    }
-  
-    const validatedSets = [];
-    for (const set of sets) {
-        let games;
-        let match = set.match(/^(\d{1,2})[\s/-](\d{1,2})$/);
-        if (match) {
-            games = [match[1], match[2]];
-        } else {
-            match = set.match(/^(\d)(\d)$/);
-            if (match) {
-                games = [match[1], match[2]];
-            } else {
-                return null;
-            }
-        }
-        validatedSets.push(`${games[0]}-${games[1]}`);
-    }
-  
-    if (validatedSets.length < 2 || validatedSets.length > 3) return null;
-    return validatedSets.join(', ');
-  }
-  
-  export function getWinnerFromScore(player1, player2, result) {
-    let p1_sets_won = 0, p2_sets_won = 0;
-    const sets = result.split(',').map(s => s.trim().split('-').map(Number));
-    sets.forEach(([games1, games2]) => {
-        if (games1 > games2) p1_sets_won++;
-        else p2_sets_won++;
-    });
-    return p1_sets_won > p2_sets_won ? player1 : player2;
-  }
-  
+}
