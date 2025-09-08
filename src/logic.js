@@ -2,12 +2,10 @@
 export function calculateLeaderboard(players, matches) {
     const playerStats = new Map();
     players.forEach(player => {
-      // Inicializa las estadísticas para cada jugador
       playerStats.set(player.id, { ...player, pj: 0, pg: 0, pp: 0, sg: 0, sp: 0, jg: 0, jp: 0 });
     });
   
     matches.forEach(match => {
-      // ... (toda la lógica de cálculo de sets y games se mantiene igual)
       const statsP1 = playerStats.get(match.player1Id);
       const statsP2 = playerStats.get(match.player2Id);
       if (!statsP1 || !statsP2) return;
@@ -37,43 +35,40 @@ export function calculateLeaderboard(players, matches) {
       }
     });
   
-    // Convertimos el mapa a un array para poder ordenarlo
-    const leaderboard = Array.from(playerStats.values());
+    const allPlayersWithStats = Array.from(playerStats.values());
   
-    // <-- CAMBIO CLAVE 1: ORDENAR LA TABLA DE POSICIONES -->
-    // Se ordena por partidos ganados, luego por diferencia de sets y finalmente por diferencia de games.
-    leaderboard.sort((a, b) => {
-      // Criterio 1: Partidos Ganados (descendente)
+    // <-- CAMBIO CLAVE 1: SEPARAR JUGADORES ACTIVOS E INACTIVOS -->
+    const activePlayers = allPlayersWithStats.filter(p => p.isActive);
+    const inactivePlayers = allPlayersWithStats.filter(p => !p.isActive);
+  
+    // <-- CAMBIO CLAVE 2: ORDENAR SOLO A LOS JUGADORES ACTIVOS -->
+    activePlayers.sort((a, b) => {
       if (a.pg !== b.pg) return b.pg - a.pg;
-  
-      // Criterio 2: Diferencia de Sets (descendente)
       const diffSetsA = a.sg - a.sp;
       const diffSetsB = b.sg - b.sp;
       if (diffSetsA !== diffSetsB) return diffSetsB - diffSetsA;
-  
-      // Criterio 3: Diferencia de Games (descendente)
       const diffGamesA = a.jg - a.jp;
       const diffGamesB = b.jg - a.jp;
       if (diffGamesA !== diffGamesB) return diffGamesB - diffGamesA;
-      
-      return 0; // Son iguales en todos los criterios
+      return 0;
     });
   
-    // <-- CAMBIO CLAVE 2: ASIGNAR EL RANKING FIJO -->
-    // Recorremos el array ya ordenado y le añadimos la propiedad 'rank' a cada jugador.
-    const rankedLeaderboard = leaderboard.map((player, index) => ({
+    // <-- CAMBIO CLAVE 3: ASIGNAR RANKING NUMÉRICO A ACTIVOS Y 'INAC' A INACTIVOS -->
+    const rankedActivePlayers = activePlayers.map((player, index) => ({
       ...player,
-      rank: index + 1 // La posición es el índice + 1
+      rank: index + 1
+    }));
+    const rankedInactivePlayers = inactivePlayers.map(player => ({
+        ...player,
+        rank: 'INAC'
     }));
   
-    // Devolvemos la lista final, ordenada y con el ranking asignado
-    return rankedLeaderboard;
+    // Devolvemos la lista final, con activos rankeados primero, seguidos por los inactivos.
+    return [...rankedActivePlayers, ...rankedInactivePlayers];
   }
   
+  // --- OTRAS FUNCIONES SIN CAMBIOS ---
   
-  // --- LAS OTRAS FUNCIONES NO NECESITAN CAMBIOS ---
-  
-  // FUNCIÓN DE PARSEO MEJORADA
   export function parseAndValidateResult(resultString) {
     let sets;
     if (resultString.includes(',')) {

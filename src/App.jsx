@@ -2,15 +2,15 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { initialPlayers, initialMatches } from './data.js';
 import { calculateLeaderboard, parseAndValidateResult, getWinnerFromScore } from './logic.js';
 
-// --- Iconos ---
-const SearchIcon = (props) => ( <svg {...props} xmlns="http://www.w.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"> <circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /> </svg> );
+// --- Iconos (Sin cambios) ---
+const SearchIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"> <circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /> </svg> );
 const TrophyIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.87 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.13 18.75 17 20.24 17 22"/><path d="M8 21v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1"/><path d="M12 11v-1a4 4 0 0 0-4-4H8"/><path d="M12 11v-1a4 4 0 0 1 4-4h0"/></svg> );
-const ShieldXIcon = (props) => ( <svg {...props} xmlns="http://www.w.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m14.5 9-5 5"/><path d="m9.5 9 5 5"/></svg> );
-const CloseIcon = (props) => ( <svg {...props} xmlns="http://www.w.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> );
-const TrashIcon = (props) => ( <svg {...props} xmlns="http://www.w.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></svg> );
-const PlusCircleIcon = (props) => ( <svg {...props} xmlns="http://www.w.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> );
+const ShieldXIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m14.5 9-5 5"/><path d="m9.5 9 5 5"/></svg> );
+const CloseIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> );
+const TrashIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></svg> );
+const PlusCircleIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> );
 
-// --- Componentes de la UI ---
+// --- Componentes de la UI (Sin cambios) ---
 const PlayerDetailModal = ({ player, allPlayers, allMatches, onClose, onDeleteMatch, onAddMatch }) => {
     const ADMIN_PASSWORD = 'admin';
     const [view, setView] = useState('details');
@@ -91,14 +91,15 @@ export default function App() {
     const [leaderboardData, setLeaderboardData] = useState([]);
     const [selectedPlayer, setSelectedPlayer] = useState(null);
 
-    useEffect(() => { setLeaderboardData(calculateLeaderboard(initialPlayers, matches)); }, [matches]);
+    useEffect(() => {
+        setLeaderboardData(calculateLeaderboard(initialPlayers, matches));
+    }, [matches]);
+
     useEffect(() => { try { localStorage.setItem('tournamentMatches', JSON.stringify(matches)); } catch (error) { console.error("Error al guardar en localStorage", error); } }, [matches]);
 
     const handleAddMatch = (newMatchData) => { const newMatch = { ...newMatchData, matchId: Math.max(...matches.map(m => m.matchId), 0) + 1 }; setMatches(currentMatches => [...currentMatches, newMatch]); };
     const handleDeleteMatch = (matchIdToDelete) => { setMatches(currentMatches => currentMatches.filter(match => match.matchId !== matchIdToDelete)); };
 
-    // <-- CAMBIO CLAVE 1: LÓGICA DE FILTRADO SIMPLIFICADA -->
-    // La 'leaderboardData' ya viene ordenada desde 'logic.js'. Solo necesitamos filtrarla.
     const filteredPlayers = useMemo(() => {
         if (!searchTerm) {
             return leaderboardData;
@@ -132,11 +133,10 @@ export default function App() {
                             <tr><th className="py-3 px-4 text-center">#</th><th className="py-3 px-4">Jugador</th><th className="py-3 px-4 text-center">Pts</th><th className="py-3 px-4 text-center">PJ</th><th className="py-3 px-4 text-center">PG</th><th className="py-3 px-4 text-center">PP</th><th className="py-3 px-4 text-center">SG</th><th className="py-3 px-4 text-center">SP</th><th className="py-3 px-4 text-center">% Set</th><th className="py-3 px-4 text-center">JG</th><th className="py-3 px-4 text-center">JP</th><th className="py-3 px-4 text-center">% Game</th></tr>
                         </thead>
                         <tbody className="divide-y divide-gray-700">
-                            {/* <-- CAMBIO CLAVE 2: USAR player.rank --> */}
                             {filteredPlayers.map((player) => {
-                                // Usamos la propiedad 'rank' que viene del objeto player
-                                const rank = player.isActive ? player.rank : 'INAC';
-                                return (<PlayerRow key={player.id} player={player} rank={rank} onSelectPlayer={setSelectedPlayer} />);
+                                // El 'rank' ya viene listo desde 'logic.js' (ej: 1, 2, o 'INAC')
+                                // Simplemente lo pasamos al componente PlayerRow.
+                                return (<PlayerRow key={player.id} player={player} rank={player.rank} onSelectPlayer={setSelectedPlayer} />);
                             })}
                         </tbody>
                     </table>
@@ -153,3 +153,4 @@ export default function App() {
         </div>
     );
 }
+
