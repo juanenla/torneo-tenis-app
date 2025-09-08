@@ -1,22 +1,22 @@
 export const initialPlayers = [
-  { id: 1, name: 'Andres Ospitaletche', phone: '1127922371', isActive: true },
-  { id: 2, name: 'Antonio Cuence', phone: '1158090551', isActive: false },
-  { id: 3, name: 'Carlos Guendulain', phone: '1153396039', isActive: false },
-  { id: 4, name: 'Fernando Manzini', phone: '1165967337', isActive: true },
-  { id: 5, name: 'Guillermo Calandrino', phone: '1153172709', isActive: true },
-  { id: 6, name: 'Guillermo Mackintosh', phone: '1144012971', isActive: false },
-  { id: 7, name: 'Guillermo Paredes Castro', phone: '1144138291', isActive: false },
-  { id: 8, name: 'Gustavo Guadagni', phone: '1141576415', isActive: false },
-  { id: 9, name: 'Javier Binaghi', phone: '1158936409', isActive: true },
-  { id: 10, name: 'Jorge Estebenet', phone: '1144177535', isActive: true },
-  { id: 11, name: 'Jorge Hiriart', phone: '1144019070', isActive: false },
-  { id: 12, name: 'José Pérez Romanelli', phone: '1154641101', isActive: true },
-  { id: 13, name: 'Juan Chacur', phone: '1150132649', isActive: true },
-  { id: 14, name: 'Juan Frenkel', phone: '1161111387', isActive: true },
-  { id: 15, name: 'Juan Risso Patrón (Capitán)', phone: '1162855826', isActive: true },
-  { id: 16, name: 'Kike Lippold', phone: '1161741245', isActive: true },
-  { id: 17, name: 'Lucas Llach', phone: '1140959096', isActive: true },
-  { id: 18, name: 'Martín Granillo Ocampo', phone: '1158165322', isActive: true },
+  { id: 1, name: 'Andres Ospitaletche', isActive: true },
+  { id: 2, name: 'Antonio Cuence', isActive: false },
+  { id: 3, name: 'Carlos Guendulain', isActive: false },
+  { id: 4, name: 'Fernando Manzini', isActive: true },
+  { id: 5, name: 'Guillermo Calandrino', isActive: true },
+  { id: 6, name: 'Guillermo Mackintosh', isActive: false },
+  { id: 7, name: 'Guillermo Paredes Castro', isActive: false },
+  { id: 8, name: 'Gustavo Guadagni', isActive: false },
+  { id: 9, name: 'Javier Binaghi', isActive: true },
+  { id: 10, name: 'Jorge Estebenet', isActive: true },
+  { id: 11, name: 'Jorge Hiriart', isActive: false },
+  { id: 12, name: 'José Pérez Romanelli', isActive: true },
+  { id: 13, name: 'Juan Chacur', isActive: true },
+  { id: 14, name: 'Juan Frenkel', isActive: true },
+  { id: 15, name: 'Juan Risso Patrón (Capitán)', isActive: true },
+  { id: 16, name: 'Kike Lippold', isActive: true },
+  { id: 17, name: 'Lucas Llach', isActive: true },
+  { id: 18, name: 'Martín Granillo Ocampo', isActive: true },
 ];
 
 export const initialMatches = [
@@ -61,5 +61,6 @@ export const initialMatches = [
   { matchId: 39, player1Id: 18, player2Id: 17, result: "6-4, 6-2" },
   { matchId: 40, player1Id: 14, player2Id: 12, result: "2-6, 3-6" },
   { matchId: 41, player1Id: 10, player2Id: 1, result: "7-5, 6-4" },
-];
+  { matchId: 42, player1Id: 13, player2Id: 12, result: "7-5, 6-4" }
+  ,];
 
