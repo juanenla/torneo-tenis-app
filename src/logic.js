@@ -1,10 +1,12 @@
-// LÓGICA DE CÁLCULO RECONSTRUIDA PARA MÁXIMA CLARIDAD
+// logic.js
 export function calculateLeaderboard(players, matches) {
     const playerStats = new Map();
     players.forEach(player => {
+      // Inicializa las estadísticas de cada jugador
       playerStats.set(player.id, { ...player, pj: 0, pg: 0, pp: 0, sg: 0, sp: 0, jg: 0, jp: 0 });
     });
   
+    // Itera sobre los partidos para calcular las estadísticas
     matches.forEach(match => {
       const statsP1 = playerStats.get(match.player1Id);
       const statsP2 = playerStats.get(match.player2Id);
@@ -40,19 +42,19 @@ export function calculateLeaderboard(players, matches) {
     const activePlayers = allPlayersWithStats.filter(p => p.isActive);
     const inactivePlayers = allPlayersWithStats.filter(p => !p.isActive);
   
-    // ORDENAMIENTO CORREGIDO
+    // ORDENAMIENTO CORREGIDO FINAL
     activePlayers.sort((a, b) => {
-      // 1. Criterio principal: Partidos ganados
+      // 1. Criterio principal: Partidos ganados (PG)
       if (a.pg !== b.pg) return b.pg - a.pg;
 
-      // 2. Nuevo criterio: Porcentaje de sets ganados
+      // 2. Desempate por Porcentaje de sets ganados
       const setRatioA = (a.sg + a.sp > 0) ? a.sg / (a.sg + a.sp) : 0;
-      const setRatioB = (b.sg + b.sp > 0) ? b.sg / (b.sg + b.sp) : 0;
+      const setRatioB = (b.sg + b.sp > 0) ? b.sg / (b.sg + b.sp) : 0; // CORREGIDO
       if (setRatioA !== setRatioB) return setRatioB - setRatioA;
 
-      // 3. Nuevo criterio: Porcentaje de games ganados
+      // 3. Desempate por Porcentaje de games ganados
       const gameRatioA = (a.jg + a.jp > 0) ? a.jg / (a.jg + a.jp) : 0;
-      const gameRatioB = (b.jg + b.jp > 0) ? b.jg / (b.jg + b.jp) : 0;
+      const gameRatioB = (b.jg + b.jp > 0) ? b.jg / (b.jg + b.jp) : 0; // CORREGIDO
       if (gameRatioA !== gameRatioB) return gameRatioB - gameRatioA;
 
       return 0;
