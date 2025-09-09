@@ -153,6 +153,7 @@ export default function App() {
                     />
                     <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 </div>
+                {/* --- DIV CONTENEDOR DE LA TABLA (CORREGIDO) --- */}
                 <div className="overflow-x-auto bg-gray-800 rounded-lg shadow-lg">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-gray-700 text-xs uppercase tracking-wider">
@@ -184,6 +185,7 @@ export default function App() {
                     </table>
                 </div>
 
+                {/* --- SECCIÓN DE PARTIDOS PENDIENTES --- */}
                 {pendingMatches.length > 0 && (
                     <div className="mt-8">
                         <h3 className="text-2xl font-bold text-yellow-400 mb-4 text-center">Resultados Pendientes de Aprobación</h3>
@@ -202,6 +204,7 @@ export default function App() {
                     </div>
                 )}
                 
+                {/* --- MODAL --- */}
                 {selectedPlayer && <PlayerDetailModal 
                     player={selectedPlayer} 
                     allPlayers={players} 
