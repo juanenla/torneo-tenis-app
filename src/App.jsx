@@ -1,17 +1,19 @@
 import React, { useState, useMemo, useEffect } from 'react';
+// --- CAMBIO 1: Importamos Supabase y ya no los datos iniciales de data.js ---
 import { supabase } from './supabaseClient.js'; 
 import { calculateLeaderboard, parseAndValidateResult, getWinnerFromScore } from './logic.js';
 
-// --- Iconos y Componentes (Sin cambios, pero los incluyo para que sea un solo bloque) ---
-const SearchIcon = (props) => ( <svg {...props} xmlns="http://www.w.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"> <circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /> </svg> );
+// --- Tus componentes de iconos (Sin cambios) ---
+const SearchIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"> <circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /> </svg> );
 const TrophyIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.87 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.13 18.75 17 20.24 17 22"/><path d="M8 21v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1"/><path d="M12 11v-1a4 4 0 0 0-4-4H8"/><path d="M12 11v-1a4 4 0 0 1 4-4h0"/></svg> );
 const ShieldXIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m14.5 9-5 5"/><path d="m9.5 9 5 5"/></svg> );
 const CloseIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> );
 const TrashIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></svg> );
 const PlusCircleIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> );
 
+// --- Tu componente PlayerDetailModal ---
 const PlayerDetailModal = ({ player, allPlayers, allMatches, onClose, onDeleteMatch, onAddMatch }) => {
-    const ADMIN_PASSWORD = 'admin';
+    const ADMIN_PASSWORD = 'admin'; // Consider moving this to an env variable later
     const [view, setView] = useState('details');
     const [targetMatch, setTargetMatch] = useState(null);
     const [password, setPassword] = useState('');
@@ -36,7 +38,7 @@ const PlayerDetailModal = ({ player, allPlayers, allMatches, onClose, onDeleteMa
         if (normalized) { const winner = getWinnerFromScore(targetMatch.player1, targetMatch.player2, normalized); setCalculatedWinner(winner); } 
         else { setCalculatedWinner(null); }
     };
-
+    
     const handleConfirmLoad = async () => { 
         setError('');
         if (!calculatedWinner) { setError("Formato de resultado no válido."); return; }
@@ -44,7 +46,6 @@ const PlayerDetailModal = ({ player, allPlayers, allMatches, onClose, onDeleteMa
         onClose();
     };
     
-    // ... (El JSX del modal no cambia)
     const renderContent = () => {
         switch(view) {
             case 'deleting': return ( <div className="p-6 text-center"><h3 className="text-lg font-semibold mb-4 text-gray-300">Eliminar Partido</h3><p className="mb-4">Para eliminar el partido contra <span className="font-bold">{getOpponent(targetMatch)?.name}</span>, ingresa la clave de administrador.</p><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Clave de admin" className="w-full bg-gray-700 border-gray-600 rounded-md p-2 mb-4" />{error && <p className="text-red-400 text-sm mb-4">{error}</p>}<div className="flex justify-center gap-4"><button onClick={() => setView('details')} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-md">Cancelar</button><button onClick={handleConfirmDelete} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md">Confirmar</button></div></div> );
@@ -55,6 +56,7 @@ const PlayerDetailModal = ({ player, allPlayers, allMatches, onClose, onDeleteMa
     return ( <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"><div className="bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"><div className="p-6 sticky top-0 bg-gray-800 border-b border-gray-700"><div className="flex justify-between items-center"><h2 className="text-2xl font-bold text-cyan-400">{player.name}</h2><button onClick={onClose} className="text-gray-400 hover:text-white"><CloseIcon className="w-6 h-6" /></button></div></div>{renderContent()}</div></div> );
 };
 
+// --- Tu componente PlayerRow ---
 const PlayerRow = ({ player, rank, onSelectPlayer }) => {
     const { name, pg, pj, pp, sg, sp, jg, jp, isActive } = player;
     const setRatio = (sg + sp) > 0 ? (sg / (sg + sp) * 100).toFixed(1) : '0.0'; 
@@ -79,6 +81,7 @@ const PlayerRow = ({ player, rank, onSelectPlayer }) => {
     );
 };
 
+
 // --- Componente Principal de la App ---
 export default function App() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -88,6 +91,7 @@ export default function App() {
     const [leaderboardData, setLeaderboardData] = useState([]);
     const [selectedPlayer, setSelectedPlayer] = useState(null);
 
+    // Carga los datos desde Supabase al iniciar
     useEffect(() => {
         const fetchInitialData = async () => {
             const { data: playersData, error: playersError } = await supabase.from('players').select('*');
@@ -101,12 +105,14 @@ export default function App() {
         fetchInitialData();
     }, []);
 
+    // Calcula el leaderboard cuando los datos cambian
     useEffect(() => {
         if (players.length > 0) {
             setLeaderboardData(calculateLeaderboard(players, matches));
         }
     }, [players, matches]);
 
+    // Guarda nuevos partidos en Supabase con estado 'pending'
     const handleAddMatch = async (newMatchData) => {
         try {
             const { data, error } = await supabase.from('matches').insert([{ ...newMatchData, status: 'pending' }]).select();
@@ -121,7 +127,7 @@ export default function App() {
         }
     };
     
-    const handleDeleteMatch = (matchIdToDelete) => {
+    const handleDeleteMatch = () => {
         alert("La eliminación de partidos ahora debe hacerse desde un panel de admin.");
     };
 
@@ -130,7 +136,6 @@ export default function App() {
         return leaderboardData.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
     }, [searchTerm, leaderboardData]);
 
-    // --- CÓDIGO JSX CORREGIDO ---
     return (
         <div className="bg-gray-900 text-white min-h-screen p-4 sm:p-6 md:p-8">
             <div className="max-w-7xl mx-auto">
@@ -152,7 +157,20 @@ export default function App() {
                 <div className="overflow-x-auto bg-gray-800 rounded-lg shadow-lg">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-gray-700 text-xs uppercase tracking-wider">
-                            <tr><th className="py-3 px-4 text-center">#</th><th className="py-3 px-4">Jugador</th><th className="py-3 px-4 text-center">Pts</th><th className="py-3 px-4 text-center">PJ</th><th className="py-3 px-4 text-center">PG</th><th className="py-3 px-4 text-center">PP</th><th className="py-3 px-4 text-center">SG</th><th className="py-3 px-4 text-center">SP</th><th className="py-3 px-4 text-center">% Set</th><th className="py-3 px-4 text-center">JG</th><th className="py-3 px-4 text-center">JP</th><th className="py-3 px-4 text-center">% Game</th></tr>
+                            <tr>
+                                <th className="py-3 px-4 text-center">#</th>
+                                <th className="py-3 px-4">Jugador</th>
+                                <th className="py-3 px-4 text-center">Pts</th>
+                                <th className="py-3 px-4 text-center">PJ</th>
+                                <th className="py-3 px-4 text-center">PG</th>
+                                <th className="py-3 px-4 text-center">PP</th>
+                                <th className="py-3 px-4 text-center">SG</th>
+                                <th className="py-3 px-4 text-center">SP</th>
+                                <th className="py-3 px-4 text-center">% Set</th>
+                                <th className="py-3 px-4 text-center">JG</th>
+                                <th className="py-3 px-4 text-center">JP</th>
+                                <th className="py-3 px-4 text-center">% Game</th>
+                            </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-700">
                             {filteredPlayers.map((player) => (
@@ -197,3 +215,4 @@ export default function App() {
         </div>
     );
 }
+
