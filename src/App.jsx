@@ -4,7 +4,7 @@ import html2canvas from 'html2canvas';
 import { supabase } from './supabaseClient.js'; 
 import { calculateLeaderboard, parseAndValidateResult, getWinnerFromScore } from './logic.js';
 
-// --- Tus componentes de iconos (con un nuevo ícono de descarga) ---
+// --- Tus componentes de iconos (con un nuevo ícono de descarga y ADMIN) ---
 const SearchIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"> <circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /> </svg> );
 const TrophyIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.87 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.13 18.75 17 20.24 17 22"/><path d="M8 21v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1"/><path d="M12 11v-1a4 4 0 0 0-4-4H8"/><path d="M12 11v-1a4 4 0 0 1 4-4h0"/></svg> );
 const ShieldXIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m14.5 9-5 5"/><path d="m9.5 9 5 5"/></svg> );
@@ -12,8 +12,9 @@ const CloseIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg
 const TrashIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></svg> );
 const PlusCircleIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> );
 const DownloadIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> );
+const AdminIcon = (props) => ( <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg> );
 
-const PlayerDetailModal = ({ player, allPlayers, allMatches, onClose, onDeleteMatch, onAddMatch }) => {
+const PlayerDetailModal = ({ player, allPlayers, allMatches, onClose, onDeleteMatch, onAddMatch, isAdmin }) => {
     const ADMIN_PASSWORD = 'admin';
     const [view, setView] = useState('details');
     const [targetMatch, setTargetMatch] = useState(null);
@@ -24,14 +25,14 @@ const PlayerDetailModal = ({ player, allPlayers, allMatches, onClose, onDeleteMa
     const playedMatches = allMatches.filter(m => m.player1_id === player.id || m.player2_id === player.id);
     const playedOpponentIds = new Set(playedMatches.map(m => m.player1_id === player.id ? m.player2_id : m.player1_id));
     const pendingOpponents = allPlayers.filter(p => p.id !== player.id && p.isActive && !playedOpponentIds.has(p.id));
-    const getOpponent = (match) => { const opponentId = match.player1_id === player.id ? match.player2_id : player.id; return allPlayers.find(p => p.id === opponentId); };
+    const getOpponent = (match) => { const opponentId = match.player1_id === player.id ? match.player2_id : match.player1_id; return allPlayers.find(p => p.id === opponentId); };
     const isWinner = (match) => { if (!match.result) return false; const winner = getWinnerFromScore(allPlayers.find(p => p.id === match.player1_id), allPlayers.find(p => p.id === match.player2_id), match.result); return winner.id === player.id; };
     const handleDeleteClick = (match) => { setTargetMatch(match); setView('deleting'); setPassword(''); setError(''); };
     const handleConfirmDelete = () => { if (password === ADMIN_PASSWORD) { onDeleteMatch(targetMatch.id); onClose(); } else { setError('Clave incorrecta.'); } };
     const handleLoadClick = (opponent) => { setTargetMatch({ player1: player, player2: opponent }); setView('loading'); setResult(''); setError(''); setCalculatedWinner(null); };
     const handleResultChange = (newResult) => { setResult(newResult); const normalized = parseAndValidateResult(newResult); if (normalized) { const winner = getWinnerFromScore(targetMatch.player1, targetMatch.player2, normalized); setCalculatedWinner(winner); } else { setCalculatedWinner(null); } };
     const handleConfirmLoad = async () => { setError(''); if (!calculatedWinner) { setError("Formato de resultado no válido."); return; } await onAddMatch({ player1_id: targetMatch.player1.id, player2_id: targetMatch.player2.id, result: parseAndValidateResult(result) }); onClose(); };
-    const renderContent = () => { switch(view) { case 'deleting': return ( <div className="p-6 text-center"><h3 className="text-lg font-semibold mb-4 text-gray-300">Eliminar Partido</h3><p className="mb-4">Para eliminar el partido contra <span className="font-bold">{getOpponent(targetMatch)?.name}</span>, ingresa la clave de administrador.</p><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Clave de admin" className="w-full bg-gray-700 border-gray-600 rounded-md p-2 mb-4" />{error && <p className="text-red-400 text-sm mb-4">{error}</p>}<div className="flex justify-center gap-4"><button onClick={() => setView('details')} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-md">Cancelar</button><button onClick={handleConfirmDelete} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md">Confirmar</button></div></div> ); case 'loading': return ( <div className="p-6"><h3 className="text-lg font-semibold mb-4 text-gray-300">Cargar Partido</h3><p className="mb-1">Jugador 1: <span className="font-bold">{targetMatch.player1.name}</span></p><p className="mb-4">Jugador 2: <span className="font-bold">{targetMatch.player2.name}</span></p><label htmlFor="modal-result" className="block text-sm font-medium text-gray-400 mb-1">Resultado (para Jugador 1)</label><input type="text" id="modal-result" value={result} onChange={e => handleResultChange(e.target.value)} placeholder="ej: 6-3, 6-4" className="w-full bg-gray-700 border-gray-600 rounded-md p-2 mb-2" /> {calculatedWinner && <p className="text-sm text-yellow-400 mb-4">Ganador calculado: <span className="font-bold">{calculatedWinner.name}</span>. ¿Es correcto?</p>} {error && <p className="text-red-400 text-sm mb-4">{error}</p>}<div className="flex justify-center gap-4"><button onClick={() => setView('details')} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-md">Cancelar</button><button onClick={handleConfirmLoad} disabled={!calculatedWinner} className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-md disabled:bg-gray-500 disabled:cursor-not-allowed">Guardar</button></div></div> ); default: return ( <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6"><div><h3 className="text-lg font-semibold mb-4 text-gray-300 border-b border-gray-700 pb-2">Partidos Jugados ({playedMatches.length})</h3><ul className="space-y-3">{playedMatches.map(match => (<li key={match.id} className="flex items-center justify-between bg-gray-700/50 p-3 rounded-md"><div><p className="font-medium">vs {getOpponent(match)?.name}</p><p className="text-sm text-gray-400">{match.result}</p></div><div className="flex items-center gap-2">{isWinner(match) ? (<div className="flex items-center space-x-2 text-green-400"><TrophyIcon className="w-5 h-5" /><span>V</span></div>) : (<div className="flex items-center space-x-2 text-red-400"><ShieldXIcon className="w-5 h-5" /><span>D</span></div>)}<button onClick={() => handleDeleteClick(match)} className="text-gray-400 hover:text-red-400 p-1 rounded-full"><TrashIcon className="w-5 h-5" /></button></div></li>))}</ul></div><div><h3 className="text-lg font-semibold mb-4 text-gray-300 border-b border-gray-700 pb-2">Partidos Pendientes ({pendingOpponents.length})</h3><ul className="space-y-2">{pendingOpponents.map(opponent => (<li key={opponent.id}><button onClick={() => handleLoadClick(opponent)} className="w-full text-left flex items-center justify-between bg-gray-700/50 p-3 rounded-md hover:bg-gray-700"><span>{opponent.name}</span><PlusCircleIcon className="w-5 h-5 text-green-400" /></button></li>))}</ul></div></div> ); } }; return ( <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"><div className="bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"><div className="p-6 sticky top-0 bg-gray-800 border-b border-gray-700"><div className="flex justify-between items-center"><h2 className="text-2xl font-bold text-cyan-400">{player.name}</h2><button onClick={onClose} className="text-gray-400 hover:text-white"><CloseIcon className="w-6 h-6" /></button></div></div>{renderContent()}</div></div> );
+    const renderContent = () => { switch(view) { case 'deleting': return ( <div className="p-6 text-center"><h3 className="text-lg font-semibold mb-4 text-gray-300">Eliminar Partido</h3><p className="mb-4">Para eliminar el partido contra <span className="font-bold">{getOpponent(targetMatch)?.name}</span>, ingresa la clave de administrador.</p><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Clave de admin" className="w-full bg-gray-700 border-gray-600 rounded-md p-2 mb-4" />{error && <p className="text-red-400 text-sm mb-4">{error}</p>}<div className="flex justify-center gap-4"><button onClick={() => setView('details')} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-md">Cancelar</button><button onClick={handleConfirmDelete} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md">Confirmar</button></div></div> ); case 'loading': return ( <div className="p-6"><h3 className="text-lg font-semibold mb-4 text-gray-300">Cargar Partido</h3><p className="mb-1">Jugador 1: <span className="font-bold">{targetMatch.player1.name}</span></p><p className="mb-4">Jugador 2: <span className="font-bold">{targetMatch.player2.name}</span></p><label htmlFor="modal-result" className="block text-sm font-medium text-gray-400 mb-1">Resultado (para Jugador 1)</label><input type="text" id="modal-result" value={result} onChange={e => handleResultChange(e.target.value)} placeholder="ej: 6-3, 6-4" className="w-full bg-gray-700 border-gray-600 rounded-md p-2 mb-2" /> {calculatedWinner && <p className="text-sm text-yellow-400 mb-4">Ganador calculado: <span className="font-bold">{calculatedWinner.name}</span>. ¿Es correcto?</p>} {error && <p className="text-red-400 text-sm mb-4">{error}</p>}<div className="flex justify-center gap-4"><button onClick={() => setView('details')} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-md">Cancelar</button><button onClick={handleConfirmLoad} disabled={!calculatedWinner} className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-md disabled:bg-gray-500 disabled:cursor-not-allowed">Guardar</button></div></div> ); default: return ( <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6"><div><h3 className="text-lg font-semibold mb-4 text-gray-300 border-b border-gray-700 pb-2">Partidos Jugados ({playedMatches.length})</h3><ul className="space-y-3">{playedMatches.map(match => (<li key={match.id} className="flex items-center justify-between bg-gray-700/50 p-3 rounded-md"><div><p className="font-medium">vs {getOpponent(match)?.name}</p><p className="text-sm text-gray-400">{match.result}</p></div><div className="flex items-center gap-2">{isWinner(match) ? (<div className="flex items-center space-x-2 text-green-400"><TrophyIcon className="w-5 h-5" /><span>V</span></div>) : (<div className="flex items-center space-x-2 text-red-400"><ShieldXIcon className="w-5 h-5" /><span>D</span></div>)}{isAdmin && (<button onClick={() => handleDeleteClick(match)} className="text-gray-400 hover:text-red-400 p-1 rounded-full"><TrashIcon className="w-5 h-5" /></button>)}</div></li>))}</ul></div><div><h3 className="text-lg font-semibold mb-4 text-gray-300 border-b border-gray-700 pb-2">Partidos Pendientes ({pendingOpponents.length})</h3><ul className="space-y-2">{pendingOpponents.map(opponent => (<li key={opponent.id}><button onClick={() => handleLoadClick(opponent)} className="w-full text-left flex items-center justify-between bg-gray-700/50 p-3 rounded-md hover:bg-gray-700"><span>{opponent.name}</span><PlusCircleIcon className="w-5 h-5 text-green-400" /></button></li>))}</ul></div></div> ); } }; return ( <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"><div className="bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"><div className="p-6 sticky top-0 bg-gray-800 border-b border-gray-700"><div className="flex justify-between items-center"><h2 className="text-2xl font-bold text-cyan-400">{player.name}</h2><button onClick={onClose} className="text-gray-400 hover:text-white"><CloseIcon className="w-6 h-6" /></button></div></div>{renderContent()}</div></div> );
 };
 
 const PlayerRow = ({ player, rank, onSelectPlayer }) => {
@@ -42,13 +43,75 @@ const PlayerRow = ({ player, rank, onSelectPlayer }) => {
     return ( <tr onClick={() => isActive && onSelectPlayer(player)} className={`${rowClasses} transition-colors duration-200`}><td className="py-3 px-4 text-center font-semibold">{rank}</td><td className="py-3 px-4 font-medium">{name}</td><td className="py-3 px-4 text-center font-bold text-cyan-400">{pg}</td><td className="py-3 px-4 text-center">{pj}</td><td className="py-3 px-4 text-center text-green-400">{pg}</td><td className="py-3 px-4 text-center text-red-400">{pp}</td><td className="py-3 px-4 text-center">{sg}</td><td className="py-3 px-4 text-center">{sp}</td><td className="py-3 px-4 text-center">{setRatio}%</td><td className="py-3 px-4 text-center">{jg}</td><td className="py-3 px-4 text-center">{jp}</td><td className="py-3 px-4 text-center">{gameRatio}%</td></tr> );
 };
 
+// --- NUEVO: Componente del Panel de Administrador ---
+const AdminPanel = ({ players, pendingMatches: initialPendingMatches, onApprove, onReject, onUpdateTags, onClose }) => {
+    const [pendingMatches, setPendingMatches] = useState(initialPendingMatches);
+
+    useEffect(() => {
+        setPendingMatches(initialPendingMatches);
+    }, [initialPendingMatches]);
+
+    const handleTagChange = (matchId, newTag) => {
+        setPendingMatches(currentMatches =>
+            currentMatches.map(m => m.id === matchId ? { ...m, display_tag: newTag } : m)
+        );
+    };
+
+    const getPlayerName = (id) => players.find(p => p.id === id)?.name || 'Desconocido';
+    
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50">
+            <div className="bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+                <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+                    <h2 className="text-2xl font-bold text-cyan-400">Panel de Administración</h2>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white"><CloseIcon className="w-6 h-6" /></button>
+                </div>
+                <div className="p-4 overflow-y-auto">
+                    {pendingMatches.length === 0 ? (
+                        <p className="text-center text-gray-400 py-8">No hay partidos pendientes de aprobación.</p>
+                    ) : (
+                        <ul className="space-y-3">
+                            {pendingMatches.map(match => (
+                                <li key={match.id} className="bg-gray-700/50 p-3 rounded-md flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <div className="flex-grow text-center sm:text-left">
+                                        <p className="font-semibold">{getPlayerName(match.player1_id)} vs {getPlayerName(match.player2_id)}</p>
+                                        <p className="text-gray-300 text-sm">Resultado: {match.result}</p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <input 
+                                            type="text"
+                                            value={match.display_tag || 'Pendiente'}
+                                            onChange={(e) => handleTagChange(match.id, e.target.value)}
+                                            className="bg-gray-600 text-yellow-300 text-xs font-bold rounded-full px-2 py-1 border border-yellow-500/30 w-28 text-center"
+                                        />
+                                        <button onClick={() => onReject(match.id)} className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md text-sm">Rechazar</button>
+                                        <button onClick={() => onApprove(match.id)} className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded-md text-sm">Aprobar</button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+                 <div className="p-4 border-t border-gray-700 mt-auto">
+                    <button onClick={() => onUpdateTags(pendingMatches)} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">Guardar Cambios en Etiquetas</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export default function App() {
+    const ADMIN_PASSWORD = 'admin';
     const [searchTerm, setSearchTerm] = useState('');
     const [players, setPlayers] = useState([]);
     const [allMatches, setAllMatches] = useState([]);
     const [leaderboardData, setLeaderboardData] = useState([]);
     const [selectedPlayer, setSelectedPlayer] = useState(null);
     const [isSharing, setIsSharing] = useState(false);
+    const [showAdminLogin, setShowAdminLogin] = useState(false);
+    const [adminPassword, setAdminPassword] = useState('');
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [adminError, setAdminError] = useState('');
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -83,7 +146,19 @@ export default function App() {
         }
     };
     
-    const handleDeleteMatch = () => { alert("La eliminación de partidos ahora debe hacerse desde un panel de admin."); };
+    const handleDeleteMatch = async (matchId) => {
+        if (!isAdmin) {
+            alert("La eliminación de partidos ahora debe hacerse desde un panel de admin.");
+            return;
+        }
+        const { error } = await supabase.from('matches').delete().eq('id', matchId);
+        if (error) { 
+            console.error("Error al rechazar/borrar:", error); 
+            alert("No se pudo borrar el partido."); 
+        } else { 
+            setAllMatches(currentMatches => currentMatches.filter(m => m.id !== matchId)); 
+        }
+    };
 
     const handleShareAsImage = async (elementId, fileName) => {
         const element = document.getElementById(elementId);
@@ -116,6 +191,56 @@ export default function App() {
         }
     };
 
+    const handleAdminLogin = () => {
+        if (adminPassword === ADMIN_PASSWORD) {
+            setIsAdmin(true);
+            setShowAdminLogin(false);
+            setAdminError('');
+            setAdminPassword('');
+        } else {
+            setAdminError('Clave incorrecta.');
+        }
+    };
+    
+    const handleApproveMatch = async (matchId) => {
+        const { error } = await supabase.from('matches').update({ status: 'approved' }).eq('id', matchId);
+        if (error) { 
+            console.error("Error al aprobar:", error); 
+            alert("No se pudo aprobar el partido."); 
+        } else { 
+            setAllMatches(currentMatches => currentMatches.map(m => m.id === matchId ? { ...m, status: 'approved' } : m)); 
+        }
+    };
+
+    const handleRejectMatch = async (matchId) => {
+        const { error } = await supabase.from('matches').delete().eq('id', matchId);
+        if (error) { 
+            console.error("Error al rechazar/borrar:", error); 
+            alert("No se pudo borrar el partido."); 
+        } else { 
+            setAllMatches(currentMatches => currentMatches.filter(m => m.id !== matchId)); 
+        }
+    };
+    
+    const handleUpdateTags = async (matchesToUpdate) => {
+        const updates = matchesToUpdate.map(m => ({ id: m.id, display_tag: m.display_tag }));
+        const { error } = await supabase.from('matches').upsert(updates);
+        if (error) {
+            console.error("Error al actualizar etiquetas:", error);
+            alert("No se pudieron guardar los cambios en las etiquetas.");
+        } else {
+            alert("Etiquetas guardadas con éxito.");
+            // Recargar datos
+            const fetchAllData = async () => {
+                const { data: playersData } = await supabase.from('players').select('*');
+                setPlayers(playersData || []);
+                const { data: allMatchesData } = await supabase.from('matches').select('*');
+                setAllMatches(allMatchesData || []);
+            };
+            fetchAllData();
+        }
+    };
+
     const pendingMatches = useMemo(() => allMatches.filter(m => m.status === 'pending').sort((a,b) => new Date(b.created_at) - new Date(a.created_at)), [allMatches]);
 
     const filteredPlayers = useMemo(() => {
@@ -125,6 +250,11 @@ export default function App() {
 
     return (
         <div className={`bg-gray-900 text-white min-h-screen p-4 sm:p-6 md:p-8 ${isSharing ? 'cursor-wait' : ''}`}>
+            {/* BOTÓN DE ADMIN */}
+            <button onClick={() => setShowAdminLogin(true)} className="fixed bottom-4 right-4 bg-cyan-600 hover:bg-cyan-700 text-white p-3 rounded-full shadow-lg z-50 transition-transform hover:scale-110">
+                <AdminIcon className="w-6 h-6" />
+            </button>
+
             <div className="max-w-7xl mx-auto">
                 <header className="mb-8 text-center">
                     <h1 className="text-4xl font-bold tracking-tight text-cyan-400">Torneo LIGA CUBANITOS</h1>
@@ -183,7 +313,7 @@ export default function App() {
                                             <p className="font-semibold">{p1?.name} vs {p2?.name}</p>
                                             <p className="text-gray-300">{match.result}</p>
                                         </div>
-                                        <span className="text-xs font-bold bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 rounded-full px-2 py-1">Pendiente</span>
+                                        <span className="text-xs font-bold bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 rounded-full px-2 py-1">{match.display_tag || 'Pendiente'}</span>
                                     </div>
                                 );
                             })}
@@ -198,9 +328,36 @@ export default function App() {
                     onClose={() => setSelectedPlayer(null)}
                     onDeleteMatch={handleDeleteMatch}
                     onAddMatch={handleAddMatch}
+                    isAdmin={isAdmin}
                 />}
+
+                {/* MODAL DE LOGIN DE ADMIN */}
+                {showAdminLogin && !isAdmin && (
+                    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+                        <div className="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-sm">
+                            <h3 className="text-lg font-semibold mb-4 text-gray-300">Acceso de Administrador</h3>
+                            <input type="password" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleAdminLogin()} placeholder="Clave de admin" className="w-full bg-gray-700 border-gray-600 rounded-md p-2 mb-4" />
+                            {adminError && <p className="text-red-400 text-sm mb-4">{adminError}</p>}
+                            <div className="flex justify-end gap-4">
+                                <button onClick={() => { setShowAdminLogin(false); setAdminError(''); setAdminPassword(''); }} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-md">Cancelar</button>
+                                <button onClick={handleAdminLogin} className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-md">Ingresar</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* PANEL DE ADMIN */}
+                {isAdmin && (
+                    <AdminPanel
+                        players={players}
+                        pendingMatches={pendingMatches}
+                        onApprove={handleApproveMatch}
+                        onReject={handleRejectMatch}
+                        onUpdateTags={handleUpdateTags}
+                        onClose={() => setIsAdmin(false)}
+                    />
+                )}
             </div>
         </div>
     );
 }
-
