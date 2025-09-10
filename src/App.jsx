@@ -20,6 +20,9 @@ const PlayerDetailModal = ({ player, allPlayers, allMatches, onClose, onDeleteMa
     const [error, setError] = useState('');
     const [calculatedWinner, setCalculatedWinner] = useState(null);
 
+    // --- CAMBIO CLAVE EN EL MODAL ---
+    // Ahora 'allMatches' contiene tanto los aprobados como los pendientes,
+    // por lo que 'playedMatches' y 'pendingOpponents' se calculan correctamente.
     const playedMatches = allMatches.filter(m => m.player1_id === player.id || m.player2_id === player.id);
     const playedOpponentIds = new Set(playedMatches.map(m => m.player1_id === player.id ? m.player2_id : m.player1_id));
     const pendingOpponents = allPlayers.filter(p => p.id !== player.id && p.isActive && !playedOpponentIds.has(p.id));
@@ -61,50 +64,42 @@ const PlayerRow = ({ player, rank, onSelectPlayer }) => {
     const setRatio = (sg + sp) > 0 ? (sg / (sg + sp) * 100).toFixed(1) : '0.0'; 
     const gameRatio = (jg + jp) > 0 ? (jg / (jg + jp) * 100).toFixed(1) : '0.0';
     const rowClasses = isActive ? "border-b border-gray-700 hover:bg-gray-700 cursor-pointer" : "border-b border-red-900/50 bg-red-900/20 text-gray-500";
-    
-    return (
-        <tr onClick={() => isActive && onSelectPlayer(player)} className={`${rowClasses} transition-colors duration-200`}>
-            <td className="py-3 px-4 text-center font-semibold">{rank}</td>
-            <td className="py-3 px-4 font-medium">{name}</td>
-            <td className="py-3 px-4 text-center font-bold text-cyan-400">{pg}</td>
-            <td className="py-3 px-4 text-center">{pj}</td>
-            <td className="py-3 px-4 text-center text-green-400">{pg}</td>
-            <td className="py-3 px-4 text-center text-red-400">{pp}</td>
-            <td className="py-3 px-4 text-center">{sg}</td>
-            <td className="py-3 px-4 text-center">{sp}</td>
-            <td className="py-3 px-4 text-center">{setRatio}%</td>
-            <td className="py-3 px-4 text-center">{jg}</td>
-            <td className="py-3 px-4 text-center">{jp}</td>
-            <td className="py-3 px-4 text-center">{gameRatio}%</td>
-        </tr>
-    );
+    return ( <tr onClick={() => isActive && onSelectPlayer(player)} className={`${rowClasses} transition-colors duration-200`}><td className="py-3 px-4 text-center font-semibold">{rank}</td><td className="py-3 px-4 font-medium">{name}</td><td className="py-3 px-4 text-center font-bold text-cyan-400">{pg}</td><td className="py-3 px-4 text-center">{pj}</td><td className="py-3 px-4 text-center text-green-400">{pg}</td><td className="py-3 px-4 text-center text-red-400">{pp}</td><td className="py-3 px-4 text-center">{sg}</td><td className="py-3 px-4 text-center">{sp}</td><td className="py-3 px-4 text-center">{setRatio}%</td><td className="py-3 px-4 text-center">{jg}</td><td className="py-3 px-4 text-center">{jp}</td><td className="py-3 px-4 text-center">{gameRatio}%</td></tr> );
 };
-
 
 // --- Componente Principal de la App ---
 export default function App() {
     const [searchTerm, setSearchTerm] = useState('');
     const [players, setPlayers] = useState([]);
-    const [matches, setMatches] = useState([]);
-    const [pendingMatches, setPendingMatches] = useState([]);
+    const [matches, setMatches] = useState([]); // <-- Solo partidos aprobados
+    const [pendingMatches, setPendingMatches] = useState([]); // <-- Solo partidos pendientes
     const [leaderboardData, setLeaderboardData] = useState([]);
     const [selectedPlayer, setSelectedPlayer] = useState(null);
 
     // Carga los datos desde Supabase al iniciar
     useEffect(() => {
         const fetchInitialData = async () => {
+            // --- CAMBIO CLAVE EN LA CARGA DE DATOS ---
             const { data: playersData, error: playersError } = await supabase.from('players').select('*');
             if (playersError) console.error('Error fetching players:', playersError);
             else setPlayers(playersData || []);
 
-            const { data: approvedMatches, error: matchesError } = await supabase.from('matches').select('*').eq('status', 'approved');
-            if (matchesError) console.error('Error fetching approved matches:', matchesError);
-            else setMatches(approvedMatches || []);
+            // 1. Pedimos TODOS los partidos, sin importar su estado
+            const { data: allMatchesData, error: matchesError } = await supabase.from('matches').select('*');
+            if (matchesError) {
+                console.error('Error fetching matches:', matchesError);
+            } else if (allMatchesData) {
+                // 2. Filtramos y separamos los partidos en dos listas
+                const approved = allMatchesData.filter(m => m.status === 'approved');
+                const pending = allMatchesData.filter(m => m.status === 'pending');
+                setMatches(approved); // <-- Estado para el ranking
+                setPendingMatches(pending); // <-- Estado para la lista de pendientes
+            }
         };
         fetchInitialData();
     }, []);
 
-    // Calcula el leaderboard cuando los datos cambian
+    // Calcula el leaderboard cuando los datos de partidos APROBADOS cambian
     useEffect(() => {
         if (players.length > 0) {
             setLeaderboardData(calculateLeaderboard(players, matches));
@@ -117,6 +112,7 @@ export default function App() {
             const { data, error } = await supabase.from('matches').insert([{ ...newMatchData, status: 'pending' }]).select();
             if (error) throw error;
             if (data && data.length > 0) {
+                // Actualiza la lista de pendientes en la UI al instante
                 setPendingMatches(currentPending => [...currentPending, data[0]]);
             }
             alert("Resultado cargado. Pendiente de aprobación.");
@@ -126,9 +122,10 @@ export default function App() {
         }
     };
     
-    const handleDeleteMatch = () => {
-        alert("La eliminación de partidos ahora debe hacerse desde un panel de admin.");
-    };
+    const handleDeleteMatch = () => { alert("La eliminación de partidos ahora debe hacerse desde un panel de admin."); };
+
+    // Creamos una lista combinada para pasarla al modal
+    const allMatchesCombined = useMemo(() => [...matches, ...pendingMatches], [matches, pendingMatches]);
 
     const filteredPlayers = useMemo(() => {
         if (!searchTerm) return leaderboardData;
@@ -144,48 +141,21 @@ export default function App() {
                 </header>
                 <p className="text-center text-gray-400 mb-8 -mt-2">Haz clic en un jugador para ver detalles y cargar partidos pendientes.</p>
                 <div className="relative mb-6">
-                    <input
-                        type="text"
-                        placeholder="Buscar jugador..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500"
-                    />
+                    <input type="text" placeholder="Buscar jugador..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500" />
                     <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 </div>
-                {/* --- DIV CONTENEDOR DE LA TABLA (CORREGIDO) --- */}
                 <div className="overflow-x-auto bg-gray-800 rounded-lg shadow-lg">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-gray-700 text-xs uppercase tracking-wider">
                             <tr>
-                                <th className="py-3 px-4 text-center">#</th>
-                                <th className="py-3 px-4">Jugador</th>
-                                <th className="py-3 px-4 text-center">Pts</th>
-                                <th className="py-3 px-4 text-center">PJ</th>
-                                <th className="py-3 px-4 text-center">PG</th>
-                                <th className="py-3 px-4 text-center">PP</th>
-                                <th className="py-3 px-4 text-center">SG</th>
-                                <th className="py-3 px-4 text-center">SP</th>
-                                <th className="py-3 px-4 text-center">% Set</th>
-                                <th className="py-3 px-4 text-center">JG</th>
-                                <th className="py-3 px-4 text-center">JP</th>
-                                <th className="py-3 px-4 text-center">% Game</th>
+                                <th className="py-3 px-4 text-center">#</th><th className="py-3 px-4">Jugador</th><th className="py-3 px-4 text-center">Pts</th><th className="py-3 px-4 text-center">PJ</th><th className="py-3 px-4 text-center">PG</th><th className="py-3 px-4 text-center">PP</th><th className="py-3 px-4 text-center">SG</th><th className="py-3 px-4 text-center">SP</th><th className="py-3 px-4 text-center">% Set</th><th className="py-3 px-4 text-center">JG</th><th className="py-3 px-4 text-center">JP</th><th className="py-3 px-4 text-center">% Game</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-700">
-                            {filteredPlayers.map((player) => (
-                                <PlayerRow 
-                                    key={player.id} 
-                                    player={player} 
-                                    rank={player.rank} 
-                                    onSelectPlayer={setSelectedPlayer} 
-                                />
-                            ))}
+                            {filteredPlayers.map((player) => ( <PlayerRow key={player.id} player={player} rank={player.rank} onSelectPlayer={setSelectedPlayer} /> ))}
                         </tbody>
                     </table>
                 </div>
-
-                {/* --- SECCIÓN DE PARTIDOS PENDIENTES --- */}
                 {pendingMatches.length > 0 && (
                     <div className="mt-8">
                         <h3 className="text-2xl font-bold text-yellow-400 mb-4 text-center">Resultados Pendientes de Aprobación</h3>
@@ -193,22 +163,15 @@ export default function App() {
                             {pendingMatches.map(match => {
                                 const p1 = players.find(p => p.id === match.player1_id);
                                 const p2 = players.find(p => p.id === match.player2_id);
-                                return (
-                                    <div key={match.id} className="bg-gray-700/50 p-3 rounded-md text-center">
-                                        <p className="font-semibold">{p1?.name} vs {p2?.name}</p>
-                                        <p className="text-gray-300">{match.result}</p>
-                                    </div>
-                                );
+                                return ( <div key={match.id} className="bg-gray-700/50 p-3 rounded-md text-center"><p className="font-semibold">{p1?.name} vs {p2?.name}</p><p className="text-gray-300">{match.result}</p></div> );
                             })}
                         </div>
                     </div>
                 )}
-                
-                {/* --- MODAL --- */}
                 {selectedPlayer && <PlayerDetailModal 
                     player={selectedPlayer} 
                     allPlayers={players} 
-                    allMatches={matches} 
+                    allMatches={allMatchesCombined} // <-- Pasamos la lista combinada al modal
                     onClose={() => setSelectedPlayer(null)}
                     onDeleteMatch={handleDeleteMatch}
                     onAddMatch={handleAddMatch}
@@ -217,3 +180,4 @@ export default function App() {
         </div>
     );
 }
+
