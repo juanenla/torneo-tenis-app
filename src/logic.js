@@ -27,6 +27,26 @@ export function parseAndValidateResult(resultString) {
         return null;
       }
     }
+
+    // --- INICIO: Lógica para Súper Tie-break (Tarsar Set) ---
+    // Convertimos los games a números para poder compararlos
+    let score1 = Number(games[0]);
+    let score2 = Number(games[1]);
+
+    // Verificamos si es un Súper Tie-break (alguien llega a 10 o más con 2 de diferencia)
+    const isSuperTiebreak = (score1 >= 10 && score1 - score2 >= 2) || (score2 >= 10 && score2 - score1 >= 2);
+
+    if (isSuperTiebreak) {
+      // Si es, lo "traducimos" a un 7-6 para el ganador
+      if (score1 > score2) {
+        games = ['7', '6']; // El jugador 1 gana el set
+      } else {
+        games = ['6', '7']; // El jugador 2 gana el set
+      }
+    }
+    // --- FIN: Lógica para Súper Tie-break ---
+
+    // Agregamos el resultado del set (ya sea el original o el convertido)
     validatedSets.push(`${games[0]}-${games[1]}`);
   }
 
